@@ -5,8 +5,9 @@ const route = require("express").Router();
 const { check, validationResult } = require("express-validator");
 
 const Post = require("../models/post");
+const isAuth = require("../middlewares/is-auth");
 
-route.get("/posts", async (req, res) => {
+route.get("/posts", isAuth, async (req, res) => {
   try {
     const page = req.query.page || 1;
     const perPage = 2;
@@ -22,6 +23,7 @@ route.get("/posts", async (req, res) => {
 
 route.post(
   "/post",
+  isAuth,
   check("title").trim().isLength({ min: 5 }),
   check("content").trim().isLength({ min: 5 }),
   async (req, res) => {
@@ -50,7 +52,7 @@ route.post(
   }
 );
 
-route.get("/post/:postId", async (req, res) => {
+route.get("/post/:postId", isAuth, async (req, res) => {
   try {
     const post = await Post.findById(req.params.postId);
     if (!post) {
@@ -64,6 +66,7 @@ route.get("/post/:postId", async (req, res) => {
 
 route.put(
   "/post/:postId",
+  isAuth,
   check("title").trim().isLength({ min: 5 }),
   check("content").trim().isLength({ min: 5 }),
   async (req, res) => {
@@ -99,7 +102,7 @@ route.put(
   }
 );
 
-route.delete("/post/:postId", async (req, res) => {
+route.delete("/post/:postId", isAuth, async (req, res) => {
   try {
     const post = await Post.findById(req.params.postId);
     if (!post) {
