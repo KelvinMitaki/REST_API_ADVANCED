@@ -6,6 +6,7 @@ const { check, validationResult } = require("express-validator");
 
 const Post = require("../models/post");
 const isAuth = require("../middlewares/is-auth");
+const User = require("../models/user");
 
 route.get("/posts", isAuth, async (req, res) => {
   try {
@@ -42,6 +43,9 @@ route.post(
         creator: req.userId,
         imageUrl: req.file.path
       });
+      const user = await User.findById(req.userId);
+      user.posts.push(post._id);
+      await user.save();
       const savedPost = await post.save();
       const populatedUser = await savedPost.populate("creator").execPopulate();
       res.status(201).send({
@@ -89,7 +93,7 @@ route.put(
       if (!post) {
         return res.status(404).send({ message: "No post found" });
       }
-      if (req.userId !== post.creator) {
+      if (req.userId !== post.creator.toString()) {
         return res.status(403).send({ message: "Forbidden" });
       }
       if (imageUrl !== post.imageUrl) {
@@ -112,10 +116,13 @@ route.delete("/post/:postId", isAuth, async (req, res) => {
     if (!post) {
       return res.status(404).send({ message: "No post found" });
     }
-    if (req.userId !== post.creator) {
+    if (req.userId !== post.creator.toString()) {
       return res.status(403).send({ message: "Forbidden" });
     }
     await Post.findByIdAndDelete(req.params.postId);
+    const user = await User.findById(req.userId);
+    user.posts.pull(req.params.postId);
+    await user.save();
     clearFilePath(post.imageUrl);
     res.send({ message: "Post deleted successfully" });
   } catch (error) {
