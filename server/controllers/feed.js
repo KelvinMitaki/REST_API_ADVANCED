@@ -94,6 +94,20 @@ route.put(
   }
 );
 
+route.delete("/post/:postId", async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.postId);
+    if (!post) {
+      return res.status(404).send({ message: "No post found" });
+    }
+    await Post.findByIdAndDelete(req.params.postId);
+    clearFilePath(post.imageUrl);
+    res.send({ message: "Post deleted successfully" });
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
+
 const clearFilePath = filepath => {
   filepath = path.join(__dirname, "..", filepath);
   fs.unlink(filepath, err => err && console.log(err));
