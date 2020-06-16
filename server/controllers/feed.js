@@ -8,8 +8,13 @@ const Post = require("../models/post");
 
 route.get("/posts", async (req, res) => {
   try {
-    const posts = await Post.find();
-    res.send({ posts });
+    const page = req.query.page || 1;
+    const perPage = 2;
+    const totalItems = await Post.countDocuments();
+    const posts = await Post.find()
+      .skip((page - 1) * perPage)
+      .limit(perPage);
+    res.send({ posts, totalItems });
   } catch (error) {
     res.status(500).send(error);
   }
