@@ -1,8 +1,9 @@
 const route = require("express").Router();
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const { check, validationResult } = require("express-validator");
 
 const User = require("../models/user");
-const { check, validationResult } = require("express-validator");
 
 route.post(
   "/signup",
@@ -49,4 +50,29 @@ route.post(
     }
   }
 );
+
+route.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).send({ message: "No user with that email found" });
+    }
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).send({ message: "password do not match" });
+    }
+    const token = jwt.sign(
+      { email: user.email, userId: user._id },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1h"
+      }
+    );
+    res.send({ token, userId: user._id });
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
 module.exports = route;
