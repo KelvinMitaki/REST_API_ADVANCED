@@ -23,12 +23,14 @@ route.post(
       if (!errors.isEmpty()) {
         return res.status(422).send({ message: "Error, Validation failed" });
       }
+      if (!req.file) {
+        return res.status(422).send({ message: "no image provided" });
+      }
       const post = new Post({
         content,
         title,
         creator: { name: "kevin" },
-        imageUrl:
-          "https://images.unsplash.com/photo-1484417894907-623942c8ee29?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=889&q=80"
+        imageUrl: req.file.path
       });
       const savedPost = await post.save();
       res.status(201).send({
