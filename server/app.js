@@ -7,7 +7,7 @@ const app = express();
 
 app.use(bodyParser.json());
 
-app.use(feedRoutes);
+app.use("/feed", feedRoutes);
 
 const PORT = process.env.PORT || 5000;
 

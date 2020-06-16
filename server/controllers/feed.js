@@ -18,4 +18,19 @@ route.get("/posts", (req, res) => {
   });
 });
 
+route.post("/post", (req, res) => {
+  const { content, title } = req.body;
+  res
+    .status(201)
+    .send({
+      post: {
+        _id: new Date().toISOString(),
+        content,
+        title,
+        creator: { name: "kevin" },
+        createdAt: new Date()
+      }
+    });
+});
+
 module.exports = route;
