@@ -7,6 +7,7 @@ const mongoose = require("mongoose");
 const multer = require("multer");
 
 const feedRoutes = require("./controllers/feed");
+const authRoutes = require("./controllers/auth");
 
 const app = express();
 
@@ -42,6 +43,7 @@ app.use(
 );
 app.use("/images", express.static(path.join(__dirname, "images")));
 app.use("/feed", feedRoutes);
+app.use("/auth", authRoutes);
 
 const mongooseConnect = async () => {
   await mongoose.connect(process.env.MONGO_URI, {
