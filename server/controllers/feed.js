@@ -39,12 +39,13 @@ route.post(
       const post = new Post({
         content,
         title,
-        creator: { name: "kevin" },
+        creator: req.userId,
         imageUrl: req.file.path
       });
       const savedPost = await post.save();
+      const populatedUser = await savedPost.populate("creator").execPopulate();
       res.status(201).send({
-        post: savedPost
+        post: populatedUser
       });
     } catch (error) {
       res.status(500).send(error);
@@ -88,6 +89,9 @@ route.put(
       if (!post) {
         return res.status(404).send({ message: "No post found" });
       }
+      if (req.userId !== post.creator) {
+        return res.status(403).send({ message: "Forbidden" });
+      }
       if (imageUrl !== post.imageUrl) {
         clearFilePath(post.imageUrl);
       }
@@ -107,6 +111,9 @@ route.delete("/post/:postId", isAuth, async (req, res) => {
     const post = await Post.findById(req.params.postId);
     if (!post) {
       return res.status(404).send({ message: "No post found" });
+    }
+    if (req.userId !== post.creator) {
+      return res.status(403).send({ message: "Forbidden" });
     }
     await Post.findByIdAndDelete(req.params.postId);
     clearFilePath(post.imageUrl);
