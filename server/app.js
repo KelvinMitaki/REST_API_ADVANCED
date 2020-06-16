@@ -5,6 +5,8 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const multer = require("multer");
+const session = require("express-session");
+const MongoStore = require("connect-mongo")(session);
 
 const feedRoutes = require("./controllers/feed");
 const authRoutes = require("./controllers/auth");
@@ -25,6 +27,26 @@ const fileStorage = multer.diskStorage({
 });
 
 app.use(bodyParser.json());
+const sessionStore = new MongoStore({
+  mongooseConnection: mongoose.createConnection(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useCreateIndex: true,
+    useUnifiedTopology: true
+  }),
+  collection: "seesions"
+});
+app.use(
+  session({
+    store: sessionStore,
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      maxAge: 1000 * 60 * 60,
+      sameSite: true
+    }
+  })
+);
 app.use(
   multer({
     storage: fileStorage,

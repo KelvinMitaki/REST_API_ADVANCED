@@ -39,7 +39,11 @@ route.post(
         status,
         password: hashedPassword
       });
-      await newUser.save();
+      const newUserSaved = await newUser.save();
+      res.status(201).send({
+        message: "User successfully created",
+        userId: newUserSaved._id
+      });
     } catch (error) {
       res.status(500).send(error);
     }
