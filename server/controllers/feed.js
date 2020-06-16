@@ -3,22 +3,13 @@ const Post = require("../models/post");
 
 const route = require("express").Router();
 
-route.get("/posts", (req, res) => {
-  res.send({
-    posts: [
-      {
-        _id: new Date().toISOString(),
-        title: "first post",
-        content: "this is the first post",
-        imageUrl:
-          "https://images.unsplash.com/photo-1484417894907-623942c8ee29?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=889&q=80",
-        creator: {
-          name: "kevin"
-        },
-        createdAt: new Date()
-      }
-    ]
-  });
+route.get("/posts", async (req, res) => {
+  try {
+    const posts = await Post.find();
+    res.send({ posts });
+  } catch (error) {
+    res.status(500).send(error);
+  }
 });
 
 route.post(
@@ -44,9 +35,18 @@ route.post(
         post: savedPost
       });
     } catch (error) {
-      console.log(error);
+      res.status(500).send(error);
     }
   }
 );
+
+route.get("/post/:postId", async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.postId);
+    res.send(post);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
 
 module.exports = route;
